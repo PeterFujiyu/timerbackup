@@ -36,6 +36,7 @@
 ### Linux（systemd）
 
 1. 创建一个服务单元文件（`backup.service`），并将以下内容复制到文件中：
+   ```service
    [Unit]
    Description=Incremental Backup Service
    After=network.target
@@ -50,6 +51,7 @@
    将 /path/to/your/main.py 替换为你实际的备份脚本路径。
 
    将该服务单元文件复制到 /etc/systemd/system/ 目录下：
+   ```
    ```bash
    sudo cp backup.service /etc/systemd/system/
    ```
