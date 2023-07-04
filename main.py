@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+import psutil
 import logging
 
 # 设置日志文件路径
@@ -13,6 +14,35 @@ log_file = os.path.join(log_dir, 'backup.log')
 
 # 设置日志级别和格式
 logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def select_drive():
+    if platform.system() == "Linux":
+        drives = [drive.mountpoint for drive in psutil.disk_partitions() if drive.fstype == "ext4"]
+    elif platform.system() == "Windows":
+        drives = [drive.device for drive in psutil.disk_partitions() if "fixed" in drive.opts]
+
+    if not drives:
+        raise ValueError("无可用的磁盘")
+
+    # 在这里选择要使用的磁盘
+    selected_drive = drives[0]
+
+    return selected_drive
+
+def format_drive(drive):
+    if platform.system() == "Windows":
+        format_command = f"format {drive}: /FS:exFAT /Q /V:BackupDrive /Y"
+    else:
+        format_command = f"mkfs.exfat /dev/{drive}"
+
+    result = messagebox.askquestion("警告", f"你将要格式化磁盘 {drive}. 所有数据将被删除. 确定要继续吗?", icon='warning')
+    if result == 'yes':
+        try:
+            subprocess.run(format_command, shell=True, check=True)
+            logging.info(f"磁盘成功格式化为exFAT: {drive}")
+        except subprocess.CalledProcessError as e:
+            logging.error(f"磁盘格式化失败: {e}", exc_info=True)
+            messagebox.showerror("错误", f"磁盘格式化失败: {e}")
 
 class BackupHandler(FileSystemEventHandler):
     def __init__(self, source, destination, progress):
@@ -48,25 +78,11 @@ def restore_backup(source, destination):
 
     try:
         subprocess.run(command, shell=True, check=True)
-        logging.info(f"恢复成功，源目录：{source}，目标目录：{destination}")
+        logging.info(f"备份成功恢复，源目录：{source}，目标目录：{destination}")
+        messagebox.showinfo("成功", "备份成功恢复")
     except subprocess.CalledProcessError as e:
-        logging.error(f"恢复失败: {e}", exc_info=True)
-        messagebox.showerror("错误", f"恢复失败: {e}")
-
-def format_drive(drive_letter):
-    if platform.system() == "Windows":
-        format_command = f"format {drive_letter}: /FS:exFAT /Q /V:BackupDrive /Y"
-    else:
-        format_command = f"mkfs.exfat /dev/{drive_letter}"
-
-    result = messagebox.askquestion("警告", f"你将要格式化磁盘 {drive_letter}. 所有数据将被删除. 确定要继续吗?", icon='warning')
-    if result == 'yes':
-        try:
-            subprocess.run(format_command, shell=True, check=True)
-            logging.info(f"磁盘成功格式化为exFAT: {drive_letter}")
-        except subprocess.CalledProcessError as e:
-            logging.error(f"磁盘格式化失败: {e}", exc_info=True)
-            messagebox.showerror("错误", f"磁盘格式化失败: {e}")
+        logging.error(f"备份恢复失败: {e}", exc_info=True)
+        messagebox.showerror("错误", f"备份恢复失败: {e}")
 
 def create_gui():
     window = tk.Tk()
@@ -86,11 +102,14 @@ def create_gui():
     dest_entry = tk.Entry(window)
     dest_entry.pack()
 
-    format_label = tk.Label(window, text='要格式化的磁盘 (例如, D)')
+    format_label = tk.Label(window, text='选择备份磁盘')
     format_label.pack()
-    format_entry = tk.Entry(window)
-    format_entry.pack()
-    format_button = tk.Button(window, text='格式化磁盘', command=lambda: format_drive(format_entry.get()))
+    format_button = tk.Button(window, text='选择磁盘', command=lambda: drive_entry.insert(0, select_drive()))
+    format_button.pack()
+    drive_entry = tk.Entry(window)
+    drive_entry.pack()
+
+    format_button = tk.Button(window, text='格式化磁盘', command=lambda: format_drive(drive_entry.get()))
     format_button.pack()
 
     progress = ttk.Progressbar(window, mode='indeterminate')
