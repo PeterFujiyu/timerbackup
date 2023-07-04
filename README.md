@@ -21,10 +21,14 @@
    git clone ～
    
 2. 进入仓库目录：
+   ```bash
    cd timerbackup
-
-3. 运行安装命令：
+   ```
+   
+4. 运行安装命令：
+   ```bash
    python setup.py install
+   ```
 请确保在运行安装命令之前已经安装了 Python 3.5 或更高版本。
 
 ## 定时自动备份
@@ -65,12 +69,12 @@ start "" /min python C:\path\to\your\backup_script.py
 
 将批处理文件移动到以下文件夹中的一个：
 
-  -%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup（只针对当前用户）
-  -%PROGRAMDATA%\Microsoft\Windows\Start Menu\Programs\StartUp（对所有用户）
+  -`%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup`（只针对当前用户）
+  -`%PROGRAMDATA%\Microsoft\Windows\Start Menu\Programs\StartUp`（对所有用户）
 
 重新启动系统，脚本将在系统启动后自动运行。
 
-请根据你的操作系统和实际情况选择适合的方法，并确保你的备份脚本路径正确。另外，对于 Linux 系统，请确保 Python 解释器的路径正确（可以使用 which python 命令来查找）。
+请根据你的操作系统和实际情况选择适合的方法，并确保你的备份脚本路径正确。另外，对于 Linux 系统，请确保 Python 解释器的路径正确（可以使用 `which python` 命令来查找）。
 
 这些方法将在系统启动后自动运行你的备份脚本，并在后台执行备份操作。请确保在自动运行备份之前备份你的数据，并仔细测试和验证自启动功能。
 
