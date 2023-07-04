@@ -10,8 +10,8 @@ setup(
     name='incremental-backup',
     version='1.0.0',
     description='Incremental Backup Script',
-    author='Your Name',
-    author_email='your.email@example.com',
+    author='Peter',
+    author_email='jiyu.fu@outlook.com',
     packages=[''],
     install_requires=required_modules,
     classifiers=[
